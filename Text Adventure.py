@@ -22,7 +22,7 @@ class GameObject:
             return
     
         if len(command) >= 2:
-            noun_word = command[1]
+            noun_word = " ".join(command[1:])
             print(verb(noun_word))
         else:
             print(verb("nothing"))
@@ -81,7 +81,7 @@ class GameObject:
 
     def status(noun):
         return f"Your name is {character.name}, you have {character.health}/{character.max_health} HP.\nInventory: {character.inventory}"
-        
+
 class Room:
     def __init__(self, name):
         self.name = name
@@ -102,43 +102,43 @@ class Room:
         return f"In this room is {[str(i) for i in self.creatures]}."
 
 class Creature:
-    def __init__(self, name, class_name, desc, health, damage, damage_range):
+    def __init__(self, name, class_name, desc, health, damage_multiplier, damage_range):
         self.name = name
         self.class_name = class_name
         self.desc = desc
         self.max_health = health
         self.health = health
-        self.damage = damage
+        self.damage_multiplier = damage_multiplier
         self.damage_range = damage_range
     
     def attack(self, target):
-        damage_randomized = self.damage * random.randrange(*self.damage_range)
+        damage_randomized = self.damage_multiplier * random.randrange(*self.damage_range)
         target.health -= damage_randomized
         print(f"The {self.name} hit you for {damage_randomized} damage!")
 
     def __str__(self):
-        return self.class_name
+        return self.name
 
     def get_desc(self):
         if self.health >= self.max_health:
-            return self.class_name + "\n" + self.desc
+            return self.name + "\n" + self.desc
         else:
             health_line = f"{self.health}/{self.max_health} HP"
-            return self.class_name + "\n" + self.desc + "\n" + health_line
+            return self.name + "\n" + self.desc + "\n" + health_line
     
 class Player:
-    def __init__(self, name, starting_room, health=25, damage=1, damage_range=(1,4), inventory=["Sword"]):
+    def __init__(self, name, starting_room, health=25, damage_multiplier=1, damage_range=(1,4), inventory=["Sword"]):
         self.name = name
         self.current_room = starting_room
         self.max_health = health
         self.health = health
-        self.damage = damage
+        self.damage_multiplier = damage_multiplier
         self.damage_range = damage_range
         self.inventory = inventory
         print(f"You enter {self.current_room.name}. {self.current_room.contents}")
 
     def attack(self, target):
-        damage_randomized = self.damage * random.randrange(*self.damage_range)
+        damage_randomized = self.damage_multiplier * random.randrange(*self.damage_range)
         target.health -= damage_randomized
         print(f"You hit the {target.name} for {damage_randomized} damage!")
 
@@ -159,19 +159,87 @@ class Player:
         print(f"You have healed for {heal_amount} HP.")
 
 class Goblin(Creature):
-    def __init__(self, name, class_name="goblin", desc="A small green creature", health=random.randrange(5, 11), damage=1, damage_range=(1,3)):
-        super().__init__(name, class_name, desc, health, damage, damage_range)
+    possible_names = ["green goblin", "angry goblin", "sticky goblin", "bloody goblin", "warted goblin", "goblin"]
+    def __init__(self):
+        super().__init__(
+            random.choice(Goblin.possible_names),
+            Goblin,
+            "A small green creature",
+            random.randrange(5,11),
+            1,
+            (1,3)
+        )
+
+class Slime(Creature):
+    possible_names = ["green goblin", "angry goblin", "sticky goblin", "bloody goblin", "warted goblin", "goblin"]
+    def __init__(self):
+        super().__init__(
+            random.choice(Goblin.possible_names),
+            Slime,
+            "A slimy, amorphous creature with a glowing gem at its core.",
+            random.randrange(2,4),
+            1,
+            (1,2)
+        )
+
+class Troll(Creature):
+    possible_names = ["green troll", "angry troll", "limping troll", "troll", "bloody troll"]
+    def __init__(self):
+        super().__init__(
+            random.choice(Troll.possible_names),
+            Troll,
+            "An enormous, lumbering beast with green skin and glowing eyes.",
+            random.randrange(15,20),
+            1,
+            (2,5)
+        )
+
+class Ogre(Creature):
+    possible_names = ["bloody ogre", "ogre", "angry ogre", "careful ogre", "black ogre"]
+    def __init__(self):
+        super().__init__(
+            random.choice(Ogre.possible_names),
+            Ogre,
+            "A massive, brutish creature with a club the size of a tree trunk.",
+            random.randrange(30,35),
+            1,
+            (4,7)
+        )
+
+class Dragon(Creature):
+    possible_names = ["great dragon", "dragon", "red dragon", "gold dragon"]
+    def __init__(self):
+        super().__init__(
+            random.choice(Dragon.possible_names),
+            Dragon,
+            "A massive, fire-breathing beast with razor-sharp claws and scales as hard as steel.",
+            random.randrange(70,75),
+            1,
+            (6,10)
+        )
 
 entrance = Room("entrance")
-goblin1 = Goblin("goblin")
+goblin1 = Goblin()
 entrance.add_creature(goblin1)
 
-dungeon = Room("dungeon")
-goblin2 = Goblin("goblin")
-dungeon.add_creature(goblin2)
+hallway = Room("hallway")
+slime1 = Slime()
+hallway.add_creature(slime1)
 
-entrance.adjacent_rooms.append(dungeon)
-dungeon.adjacent_rooms.append(entrance)
+dungeon = Room("dungeon")
+troll1 = Troll()
+dungeon.add_creature(troll1)
+
+treasure_room = Room("treasure_room")
+dragon1 = Dragon()
+treasure_room.add_creature(dragon1)
+
+entrance.adjacent_rooms.append(hallway)
+hallway.adjacent_rooms.append(entrance)
+hallway.adjacent_rooms.append(dungeon)
+hallway.adjacent_rooms.append(treasure_room)
+dungeon.adjacent_rooms.append(hallway)
+treasure_room.adjacent_rooms.append(hallway)
 
 name = input("What is your name? ")
 character = Player(name, entrance)
@@ -187,4 +255,5 @@ while character.health > 0:
     else:
         GameObject.get_input()
 else:
+    print("You have 0 HP.")
     print("Game Over!")
