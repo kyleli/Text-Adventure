@@ -110,8 +110,8 @@ class Dungeon:
                         self.rooms.append(new_room)
                         new_room.spawn_monsters()
 
-        for room in self.rooms:
-            print(room.name, [r.name for r in room.adjacent_rooms])
+        #  for room in self.rooms:
+            #  print(room.name, [r.name for r in room.adjacent_rooms])
 
 class Room:
     num_rooms = {}  # class variable to keep track of number of rooms of each subclass
@@ -182,7 +182,7 @@ class Entrance(Room):
     def __init__(self):
         super().__init__("entrance")
         self.monster_types = [Goblin, Slime]
-        self.num_monsters = world_seed.randint(1, 2)
+        self.num_monsters = world_seed.randint(1, 3)
 
 class Hallway(Room):
     def __init__(self):
@@ -391,7 +391,7 @@ character = Player(name, dungeon.rooms[0])
 
 while character.health > 0:
     if not character.current_room.creatures:
-        print("You have defeated all the creatures in this room.")
+        print("There are no enemies in this room.")
         room_options = [room.name for room in character.current_room.adjacent_rooms]
         print(f"Adjacent rooms: {room_options}")
         next_room = input("Which room would you like to move to? ")
