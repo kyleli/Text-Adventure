@@ -2,12 +2,12 @@ import random
 
 class GameObject:
     verb_dict = {
-        "examine": "Examine a creature in the room.",
-        "hit": "Hit a creature in the room.",
-        "help": "Get help about the available commands.",
-        "heal": "Heal for an amount of damage.",
-        "kill": "Immediately kill the target.",
-        "status": "Get your own status."
+        "examine": "Examine a creature in the room. Use by typing examine [target].",
+        "hit": "Hit a creature in the room. Use by typing hit [target].",
+        "help": "Get help about the available commands. Use by typing help [command].",
+        "heal": "Heal for an amount of damage. Use by typing heal.",
+        "kill": "Immediately kill the target. Use by typing kill [target].",
+        "status": "Get your own status. Use by typing status."
     }
 
     @staticmethod
