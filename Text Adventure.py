@@ -7,7 +7,9 @@ class gameMethod:
         "help": "Get help about the available commands. Use by typing help [command].",
         "heal": "Heal for an amount of damage. Use by typing heal.",
         "kill": "Immediately kill the target. Use by typing kill [target].",
-        "status": "Get your own status. Use by typing status."
+        "status": "Get your own status. Use by typing status.",
+        "repeat": "Repeat your last action. Use by typing repeat or r",
+        "r": "Repeat your last action. Use by typing repeat or r"  # IMPLEMENT REPEAT, store last input
     }
 
     @staticmethod
@@ -106,6 +108,7 @@ class Dungeon:
                     if connected:
                         unconnected_rooms.append(new_room)
                         self.rooms.append(new_room)
+                        new_room.spawn_monsters()
 
         for room in self.rooms:
             print(room.name, [r.name for r in room.adjacent_rooms])
@@ -117,6 +120,8 @@ class Room:
         self.name = name
         self.creatures = []
         self.adjacent_rooms = []
+        self.monster_types = []
+        self.num_monsters = 0
         if name not in Room.num_rooms:
             Room.num_rooms[name] = 1
         else:
@@ -157,6 +162,12 @@ class Room:
     def add_creature(self, creature):
         self.creatures.append(creature)
 
+    def spawn_monsters(self):
+        for monster_number in range(self.num_monsters):
+            monster_type = random.choice(self.monster_types)
+            monster = monster_type()
+            self.add_creature(monster)
+
     def remove_creature(self, creature):
         if creature in self.creatures:
             self.creatures.remove(creature)
@@ -170,18 +181,26 @@ class Room:
 class Entrance(Room):
     def __init__(self):
         super().__init__("entrance")
+        self.monster_types = [Goblin, Slime]
+        self.num_monsters = world_seed.randint(1, 2)
 
 class Hallway(Room):
     def __init__(self):
         super().__init__("hallway")
+        self.monster_types = [Goblin, Slime]
+        self.num_monsters = world_seed.randint(1, 4)
 
 class Prison(Room):
     def __init__(self):
         super().__init__("prison")
+        self.monster_types = [Orc, Troll]
+        self.num_monsters = world_seed.randint(1, 3)
 
 class TreasureRoom(Room):
     def __init__(self):
         super().__init__("treasure room")
+        self.monster_types = [Dragon]
+        self.num_monsters = world_seed.randint(1, 2)
 
 class Player:
     def __init__(self, name, starting_room, health=25, damage_multiplier=1, damage_range=(1,4), inventory=["Sword"]):
@@ -253,12 +272,72 @@ class Goblin(Creature):
         )
 
 class Slime(Creature):
-    possible_names = ["green goblin", "angry goblin", "sticky goblin", "bloody goblin", "warted goblin", "goblin"]
+    possible_names = ["slime", "yellow slime", "purple slime", "red slime", "orange slime", "purple slime", "blue slime", "green slime"]
     def __init__(self):
         super().__init__(
-            random.choice(Goblin.possible_names),
+            random.choice(Slime.possible_names),
             Slime,
             "A slimy, amorphous creature with a glowing gem at its core.",
+            random.randrange(2,4),
+            1,
+            (1,2)
+        )
+
+class Ghost(Creature):  # TO MODIFY
+    possible_names = ["ghost", "angry ghost", "red ghost", "bloody goblin", "warted goblin", "goblin"]
+    def __init__(self):
+        super().__init__(
+            random.choice(Ghost.possible_names),
+            Slime,
+            "BOOOOOOOOOOOOO",
+            random.randrange(2,4),
+            1,
+            (1,2)
+        )
+
+class Skeleton(Creature):  # TO MODIFY
+    possible_names = ["skeleton", "broken skeleton", "shattered skeleton", "dark skeleton", "cloaked skeleton", "bloody skeleton", "angry skeleton"]
+    def __init__(self):
+        super().__init__(
+            random.choice(Skeleton.possible_names),
+            Slime,
+            "CLACKCLACKCLACK",
+            random.randrange(2,4),
+            1,
+            (1,2)
+        )
+
+class Zombie(Creature):  # TO MODIFY
+    possible_names = ["zombie", "broken zombie", "hungry zombie", "pale zombie", "bloody zombie", "decayed zombie", "angry zombie"]
+    def __init__(self):
+        super().__init__(
+            random.choice(Zombie.possible_names),
+            Slime,
+            "GRRRRRRRRR",
+            random.randrange(2,4),
+            1,
+            (1,2)
+        )
+
+class GiantSpider(Creature):  # TO MODIFY
+    possible_names = ["spider", "angry spider", "bloody spider", "hairy spider", "slimy spider", "fanged spider"]
+    def __init__(self):
+        super().__init__(
+            random.choice(GiantSpider.possible_names),
+            Slime,
+            "HISSSSSSSSSSSSSS",
+            random.randrange(2,4),
+            1,
+            (1,2)
+        )
+
+class Orc(Creature):  # TO MODIFY
+    possible_names = ["orc", "green orc", "war orc", "bloody orc", "angry orc", "bearded orc", "large orc"]
+    def __init__(self):
+        super().__init__(
+            random.choice(Orc.possible_names),
+            Slime,
+            "OINKOINKOINK",
             random.randrange(2,4),
             1,
             (1,2)
@@ -302,7 +381,10 @@ class Dragon(Creature):
 
 seed = input("Enter a seed: ")
 world_seed = random.Random(seed)
-dungeon = Dungeon(5, world_seed)
+
+size = world_seed.randint(5,10)
+
+dungeon = Dungeon(size, world_seed)
 
 name = input("What is your name? ")
 character = Player(name, dungeon.rooms[0])
