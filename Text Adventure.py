@@ -1,7 +1,9 @@
 import random
 
+#  store core gameplay scripts
 class gameMethod:
-    verb_dict = {
+    #  dictionary of available commands
+    action_dict = {
         "examine": "Examine a creature in the room. Use by typing examine [target].",
         "hit": "Hit a creature in the room. Use by typing hit [target].",
         "help": "Get help about the available commands. Use by typing help [command].",
@@ -9,30 +11,32 @@ class gameMethod:
         "kill": "Immediately kill the target. Use by typing kill [target].",
         "status": "Get your own status. Use by typing status.",
         "repeat": "Repeat your last action. Use by typing repeat or r",
-        "r": "Repeat your last action. Use by typing repeat or r"  # IMPLEMENT REPEAT, store last input
+        "r": "Repeat your last action. Use by typing repeat or r"  #  TODO: IMPLEMENT REPEAT, store last input
     }
 
+    #  validate user input and split into action and target
     @staticmethod
     def get_input():
         command = input(": ").split()
-        verb_word = command[0]
-        if verb_word in gameMethod.verb_dict:
-            verb = getattr(gameMethod, verb_word)
+        action_word = command[0]
+        if action_word in gameMethod.action_dict:
+            action = getattr(gameMethod, action_word)
         else:
-            print(f"Unknown verb {verb_word}")
+            print(f"Unknown action {action_word}")
             print("For a list of commands type \"help\"")
             return
     
         if len(command) >= 2:
-            noun_word = " ".join(command[1:])
-            print(verb(noun_word))
+            target_word = " ".join(command[1:])
+            print(action(target_word))
         else:
-            print(verb("nothing"))
+            print(action("nothing"))
 
+    #  deal damage to target and take damage back TODO: move combat and turns to a seperate loop so enemies can deal damage when any action is taken.
     @staticmethod
-    def hit(noun):
+    def hit(target):
         for creature in character.current_room.creatures:
-            if creature.name == noun:
+            if creature.name == target:
                 character.attack(creature)
                 if creature.health <= 0:
                     character.current_room.remove_creature(creature)
@@ -41,49 +45,51 @@ class gameMethod:
                     creature.attack(character)
                     return f"You prepare for your next move."
         else:
-            return f"There is no {noun} to hit."
+            return f"There is no {target} to hit."
     
     @staticmethod
-    def examine(noun):
-        if noun == character.current_room.name or noun == "room":
+    def examine(target):
+        if target == character.current_room.name or target == "room":
             return character.current_room.contents
         for creature in character.current_room.creatures:
-            if creature.name == noun:
+            if creature.name == target:
                 return creature.get_desc()
-        return f"There is no {noun} here."
+        return f"There is no {target} here."
     
     @staticmethod
-    def help(noun):
-        if noun == "nothing":
-            return list(gameMethod.verb_dict.keys())
-        elif noun in gameMethod.verb_dict:
-            return gameMethod.verb_dict[noun]
+    def help(target):
+        if target == "nothing":
+            return list(gameMethod.action_dict.keys())
+        elif target in gameMethod.action_dict:
+            return gameMethod.action_dict[target]
         else:
-            return f"Unknown command {noun}"
+            return f"Unknown command {target}"
     
     @staticmethod
-    def heal(noun):
+    def heal(target):
         character.heal()
         if len(character.current_room.creatures) > 0:
             for creature in character.current_room.creatures:
                 creature.attack(character)
         return f"You prepare for your next move."
     
+    #  debug command to instantly kill any target TODO: move debug commands to a special prefix
     @staticmethod
-    def kill(noun):
-        if noun == character.name or noun == "self":
+    def kill(target):
+        if target == character.name or target == "self":
             character.health = 0
             return "You have killed yourself!"
         for creature in character.current_room.creatures:
-            if creature.name == noun:
+            if creature.name == target:
                 character.current_room.remove_creature(creature)
                 return f"You have killed the {creature.name}!"
         else:
-            return f"There is no {noun} to kill."
+            return f"There is no {target} to kill."
 
-    def status(noun):
+    def status(target):
         return f"Your name is {character.name}, you have {character.health}/{character.max_health} HP.\nInventory: {character.inventory}"
 
+#  generate and store the game map
 class Dungeon:
     def __init__(self, num_rooms, world_seed=None):
         self.rooms = []
@@ -122,6 +128,7 @@ class Room:
         self.adjacent_rooms = []
         self.monster_types = []
         self.num_monsters = 0
+        #  append digit to end of room TODO: make into a number system instead of unique room names to select
         if name not in Room.num_rooms:
             Room.num_rooms[name] = 1
         else:
@@ -130,6 +137,7 @@ class Room:
         self.x = x
         self.y = y
 
+    #  TODO: improve this generation so we can add special rooms (for win conditions) and avoid overlap
     def connect_to(self, other, direction):
         if len(self.adjacent_rooms) >= 3 or len(other.adjacent_rooms) >= 3:
             return False
@@ -234,6 +242,7 @@ class Player:
         self.health += heal_amount
         print(f"You have healed for {heal_amount} HP.")
 
+#  TODO: instead of unique names for each creature, number the creatures in the room to be attacked 1. goblin 2. troll etc.
 class Creature:
     def __init__(self, name, class_name, desc, health, damage_multiplier, damage_range):
         self.name = name
@@ -379,16 +388,20 @@ class Dragon(Creature):
             (6,10)
         )
 
+#  TODO: move these into the gameMethod class.
+#  request seed for world gen
 seed = input("Enter a seed: ")
 world_seed = random.Random(seed)
 
-size = world_seed.randint(5,10)
+world_size = world_seed.randint(5,10)
 
-dungeon = Dungeon(size, world_seed)
+dungeon = Dungeon(world_size, world_seed)
 
 name = input("What is your name? ")
 character = Player(name, dungeon.rooms[0])
 
+#  main game loop for requesting input
+#  TODO: change the game loop to be turn based, track number of turns and when the dungeon is complete, your score is number of turns required on seed to complete.
 while character.health > 0:
     if not character.current_room.creatures:
         print("There are no enemies in this room.")
