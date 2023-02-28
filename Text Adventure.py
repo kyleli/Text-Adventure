@@ -210,7 +210,7 @@ class Graveyard(Room):
         self.monster_types = [Ghost, Skeleton, Zombie]
         self.num_monsters = world_seed.randint(1, 3)
 
-class SpiderNest(Room)
+class SpiderNest(Room):
     def __init__(self):
         super().__init__("spider nest")
         self.monster_types = [GiantSpider]
