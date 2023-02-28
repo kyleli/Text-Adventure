@@ -103,7 +103,7 @@ class Dungeon:
         unconnected_rooms = [starting_room]
 
         for i in range(num_rooms - 1):
-            new_room = world_seed.choice([Hallway, Prison, TreasureRoom])()
+            new_room = world_seed.choice([Hallway, Prison, TreasureRoom, SpiderNest, Graveyard])()
             connected = False
             while not connected:
                 parent_room = world_seed.choice(unconnected_rooms)
@@ -201,7 +201,19 @@ class Hallway(Room):
 class Prison(Room):
     def __init__(self):
         super().__init__("prison")
-        self.monster_types = [Orc, Troll]
+        self.monster_types = [Orc, Troll, Ogre]
+        self.num_monsters = world_seed.randint(1, 3)
+
+class Graveyard(Room):
+    def __init__(self):
+        super().__init__("graveyard")
+        self.monster_types = [Ghost, Skeleton, Zombie]
+        self.num_monsters = world_seed.randint(1, 3)
+
+class SpiderNest(Room)
+    def __init__(self):
+        super().__init__("spider nest")
+        self.monster_types = [GiantSpider]
         self.num_monsters = world_seed.randint(1, 3)
 
 class TreasureRoom(Room):
@@ -299,7 +311,7 @@ class Ghost(Creature):  # TO MODIFY
             random.choice(Ghost.possible_names),
             Slime,
             "BOOOOOOOOOOOOO",
-            random.randrange(2,4),
+            random.randrange(2,5),
             1,
             (1,2)
         )
@@ -337,7 +349,7 @@ class GiantSpider(Creature):  # TO MODIFY
             "HISSSSSSSSSSSSSS",
             random.randrange(2,4),
             1,
-            (1,2)
+            (2,4)
         )
 
 class Orc(Creature):  # TO MODIFY
@@ -347,9 +359,9 @@ class Orc(Creature):  # TO MODIFY
             random.choice(Orc.possible_names),
             Slime,
             "OINKOINKOINK",
-            random.randrange(2,4),
+            random.randrange(5,9),
             1,
-            (1,2)
+            (3,5)
         )
 
 class Troll(Creature):
